@@ -2,6 +2,12 @@
 
 A comprehensive VS Code extension for enhanced SCSS/Sass development with intelligent navigation, autocomplete, and path mapping support.
 
+[![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/alexeypt.scss-navigation-intellisense?style=flat&label=VS%20Marketplace&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=alexeypt.scss-navigation-intellisense)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/alexeypt.scss-navigation-intellisense?style=flat)](https://marketplace.visualstudio.com/items?itemName=alexeypt.scss-navigation-intellisense)
+[![Rating](https://img.shields.io/visual-studio-marketplace/r/alexeypt.scss-navigation-intellisense?style=flat)](https://marketplace.visualstudio.com/items?itemName=alexeypt.scss-navigation-intellisense)
+
+**[Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=alexeypt.scss-navigation-intellisense)**
+
 ## Features
 
 ### Navigation

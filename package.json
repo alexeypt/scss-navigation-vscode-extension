@@ -1,6 +1,6 @@
 {
-	"name": "scss-navigation",
-	"displayName": "SCSS Navigation",
+	"name": "scss-navigation-intellisense",
+	"displayName": "SCSS Navigation and Intellisense",
 	"description": "A comprehensive VS Code extension for enhanced SCSS/Sass development with intelligent navigation, autocomplete, and path mapping support. ",
 	"version": "1.0.0",
 	"publisher": "alexeypt",
