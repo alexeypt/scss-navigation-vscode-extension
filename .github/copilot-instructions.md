@@ -4,22 +4,40 @@ A VSCode extension that provides better intellisense for SCSS files with configu
 
 ## Features
 - Go to Definition for @use and @import statements
-- Configurable path mappings via VS Code settings
+- Configurable path mappings or load paths via VS Code settings
 - Supports SCSS partials (files starting with _)
 - Auto-detects multiple file extensions
 
 ## Configuration
 
+Choose one of the following configuration methods:
+
+### Option A: Path Mappings (Alias-based)
+
 Add to your `.vscode/settings.json`:
 
 ```json
 {
-  "scssNavigation.baseUrl": ".",
   "scssNavigation.pathMappings": {
     "styles/*": "./src/styles/*"
   }
 }
 ```
+
+### Option B: Load Paths (Search directories)
+
+Add to your `.vscode/settings.json`:
+
+```json
+{
+  "scssNavigation.loadPaths": [
+    "./src/styles",
+    "./src/components"
+  ]
+}
+```
+
+**Note:** Only one of `pathMappings` or `loadPaths` should be specified.
 
 ## Testing the Extension
 

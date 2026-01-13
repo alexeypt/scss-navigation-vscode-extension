@@ -10,58 +10,93 @@ interface PathMapping {
 export class PathResolver {
     private pathMappings: PathMapping[] = [];
     private workspaceRoot: string;
-    private baseUrl: string;
+    private loadPaths: string[] = [];
+    private useLoadPaths: boolean = false;
 
     constructor(workspaceRoot: string) {
         this.workspaceRoot = workspaceRoot;
-        this.baseUrl = '.';
-        this.loadPathMappings();
+        this.loadConfiguration();
     }
 
     /**
-     * Load path mappings from VS Code configuration
+     * Load configuration from VS Code settings
      */
-    private loadPathMappings(): void {
+    private loadConfiguration(): void {
         const config = vscode.workspace.getConfiguration('scssNavigation');
         const mappings = config.get<Record<string, string>>('pathMappings', {});
-        this.baseUrl = config.get<string>('baseUrl', '.');
+        const loadPaths = config.get<string[]>('loadPaths', []);
 
-        this.pathMappings = [];
-        for (const [pattern, targetPath] of Object.entries(mappings)) {
-            this.pathMappings.push({
-                pattern: pattern,
-                targetPath: targetPath
-            });
+        // Check if both are specified (mutual exclusivity)
+        const hasPathMappings = Object.keys(mappings).length > 0;
+        const hasLoadPaths = loadPaths.length > 0;
+
+        if (hasPathMappings && hasLoadPaths) {
+            vscode.window.showWarningMessage(
+                'SCSS Navigation: Both pathMappings and loadPaths are configured. Only one should be specified. Using pathMappings.'
+            );
+        }
+
+        // Load pathMappings (takes priority if both are set)
+        if (hasPathMappings) {
+            this.useLoadPaths = false;
+            this.pathMappings = [];
+            for (const [pattern, targetPath] of Object.entries(mappings)) {
+                this.pathMappings.push({
+                    pattern: pattern,
+                    targetPath: targetPath
+                });
+            }
+        }
+        // Load loadPaths
+        else if (hasLoadPaths) {
+            this.useLoadPaths = true;
+            this.loadPaths = loadPaths.map(p => path.join(this.workspaceRoot, p));
+        }
+        // Default: empty configuration
+        else {
+            this.useLoadPaths = false;
+            this.pathMappings = [];
+            this.loadPaths = [];
         }
     }
 
     /**
-     * Resolve a module path using configured path mappings
+     * Resolve a module path using configured path mappings or load paths
      */
     public resolve(importPath: string, currentFilePath: string): string[] {
         const possiblePaths: string[] = [];
 
-        // Try path mappings first
-        for (const mapping of this.pathMappings) {
-            const pattern = mapping.pattern.replace(/\*/g, '(.*)');
-            const regex = new RegExp(`^${pattern}$`);
-            const match = importPath.match(regex);
+        // Try path mappings first (if configured)
+        if (!this.useLoadPaths && this.pathMappings.length > 0) {
+            for (const mapping of this.pathMappings) {
+                const pattern = mapping.pattern.replace(/\*/g, '(.*)');
+                const regex = new RegExp(`^${pattern}$`);
+                const match = importPath.match(regex);
 
-            if (match) {
-                const captured = match[1] || '';
-                const resolvedPath = mapping.targetPath.replace(/\*/g, captured);
-                const baseDir = path.join(this.workspaceRoot, this.baseUrl);
-                
-                const fullPath = path.join(baseDir, resolvedPath);
-                possiblePaths.push(...this.tryExtensions(fullPath));
+                if (match) {
+                    const captured = match[1] || '';
+                    const resolvedPath = mapping.targetPath.replace(/\*/g, captured);
+                    
+                    // Always resolve from workspace root
+                    const fullPath = path.join(this.workspaceRoot, resolvedPath);
+                    possiblePaths.push(...this.tryExtensions(fullPath));
+                }
             }
         }
 
-        // If no mapping found, try relative to current file
+        // Try relative to current file
         if (possiblePaths.length === 0) {
             const currentDir = path.dirname(currentFilePath);
             const relativePath = path.join(currentDir, importPath);
             possiblePaths.push(...this.tryExtensions(relativePath));
+        }
+
+        // Try load paths (if configured and no relative match found)
+        if (this.useLoadPaths && possiblePaths.length === 0) {
+            for (const loadPath of this.loadPaths) {
+                const fullPath = path.join(loadPath, importPath);
+                possiblePaths.push(...this.tryExtensions(fullPath));
+            }
         }
 
         // Filter to only existing files
@@ -122,11 +157,12 @@ export class PathResolver {
     }
 
     /**
-     * Reload path mappings (useful when config changes)
+     * Reload configuration (useful when config changes)
      */
     public reload(): void {
         this.pathMappings = [];
-        this.baseUrl = '.';
-        this.loadPathMappings();
+        this.loadPaths = [];
+        this.useLoadPaths = false;
+        this.loadConfiguration();
     }
 }

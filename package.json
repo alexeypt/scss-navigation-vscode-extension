@@ -41,17 +41,20 @@
 				"scssNavigation.pathMappings": {
 					"type": "object",
 					"default": {},
-					"description": "Path mappings for resolving SCSS imports. Example: { \"styles/*\": \"./src/styles/*\" }",
+					"description": "Path mappings for resolving SCSS imports (e.g., { \"styles/*\": \"./src/styles/*\" }). Paths are resolved from workspace root. Only one of pathMappings or loadPaths should be specified.",
 					"patternProperties": {
 						".*": {
 							"type": "string"
 						}
 					}
 				},
-				"scssNavigation.baseUrl": {
-					"type": "string",
-					"default": ".",
-					"description": "Base directory relative to workspace root for resolving paths"
+				"scssNavigation.loadPaths": {
+					"type": "array",
+					"default": [],
+					"description": "Directories to search for stylesheets referenced in @use and @import rules, if not found via relative path (e.g., [\"./src/styles\", \"./src/components\"]). Only one of loadPaths or pathMappings should be specified.",
+					"items": {
+						"type": "string"
+					}
 				}
 			}
 		}
